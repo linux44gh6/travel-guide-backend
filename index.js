@@ -12,9 +12,8 @@ app.get('/',async(req,res)=>{
   res.send('tourist guide running')
 })
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.pnsxsk9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
-
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
@@ -26,15 +25,26 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    //-----------all collection of database
+    //-----------all collection of database--------------
     const placesCollection=client.db('TourisGuide').collection("places")
-    //---------------all restAPI for website------------
+    const guideCollection=client.db('TourisGuide').collection("ourGuides")
 
+    //---------------all restAPI for website------------
     app.get('/places',async(req,res)=>{
       const result=await placesCollection.find().toArray()
       res.send(result)
     })
+      app.get('/guides',async(req,res)=>{
+        const result=await guideCollection.find().toArray()
+        res.send(result)
+      })
 
+      app.get('/places/:id',async(req,res)=>{
+        const id=req.params.id
+        const query={_id:new ObjectId(id)}
+        const result=await placesCollection.findOne(query)
+        res.send(result)
+      })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
