@@ -26,8 +26,15 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    
-    await client.connect();
+    //-----------all collection of database
+    const placesCollection=client.db('TourisGuide').collection("places")
+    //---------------all restAPI for website------------
+
+    app.get('/places',async(req,res)=>{
+      const result=await placesCollection.find().toArray()
+      res.send(result)
+    })
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
