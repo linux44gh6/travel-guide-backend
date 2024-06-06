@@ -28,6 +28,7 @@ async function run() {
     //-----------all collection of database--------------
     const placesCollection=client.db('TourisGuide').collection("places")
     const guideCollection=client.db('TourisGuide').collection("ourGuides")
+    const reviewCollection=client.db('TourisGuide').collection("review")
 
     //---------------all restAPI for website------------
     app.get('/places',async(req,res)=>{
@@ -43,6 +44,26 @@ async function run() {
         const id=req.params.id
         const query={_id:new ObjectId(id)}
         const result=await placesCollection.findOne(query)
+        res.send(result)
+      })
+
+      app.get('/guide/:id',async(req,res)=>{
+        const id=req.params.id
+        const query={_id:new ObjectId(id)}
+        const result=await guideCollection.findOne(query)
+        res.send(result)
+      })
+
+      app.post('/review',async(req,res)=>{
+        const review=req.body
+        const result=await reviewCollection.insertOne(review)
+        res.send(result)
+      })
+      app.get('/review/:id',async(req,res)=>{
+        const id=req.params.id
+        console.log(id);
+        const query={id:id}
+        const result=await reviewCollection.find(query).toArray()
         res.send(result)
       })
     // Send a ping to confirm a successful connection
