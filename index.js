@@ -29,6 +29,8 @@ async function run() {
     const placesCollection=client.db('TourisGuide').collection("places")
     const guideCollection=client.db('TourisGuide').collection("ourGuides")
     const reviewCollection=client.db('TourisGuide').collection("review")
+    const bookingsCollection=client.db('TourisGuide').collection("bookings")
+    const wishlistCollection=client.db('TourisGuide').collection("wishlist")
 
     //---------------all restAPI for website------------
     app.get('/places',async(req,res)=>{
@@ -64,6 +66,17 @@ async function run() {
         console.log(id);
         const query={id:id}
         const result=await reviewCollection.find(query).toArray()
+        res.send(result)
+      })
+
+      app.post('/bookings',async(req,res)=>{
+        const bookingInfo=req.body
+        const result=await bookingsCollection.insertOne(bookingInfo)
+        res.send(result)
+      })
+      app.post('/wishList',async(req,res)=>{
+        const item=req.body
+        const result=await wishlistCollection.insertOne(item)
         res.send(result)
       })
     // Send a ping to confirm a successful connection
