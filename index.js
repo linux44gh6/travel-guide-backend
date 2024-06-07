@@ -79,6 +79,18 @@ async function run() {
         const result=await wishlistCollection.insertOne(item)
         res.send(result)
       })
+      app.get('/bookings/:email',async(req,res)=>{
+        const email=req.params.email
+        const query={email:email}
+        const result=await bookingsCollection.find(query).toArray()
+        res.send(result)
+      })
+      app.get('/wishList/:email',async(req,res)=>{
+        const email=req.params.email
+        const query={email:email}
+        const result=await wishlistCollection.find(query).toArray()
+        res.send(result)
+      })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
