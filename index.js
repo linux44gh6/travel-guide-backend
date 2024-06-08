@@ -31,10 +31,16 @@ async function run() {
     const reviewCollection=client.db('TourisGuide').collection("review")
     const bookingsCollection=client.db('TourisGuide').collection("bookings")
     const wishlistCollection=client.db('TourisGuide').collection("wishlist")
+    const userCollection=client.db('TourisGuide').collection("users")
 
     //---------------all restAPI for website------------
     app.get('/places',async(req,res)=>{
       const result=await placesCollection.find().toArray()
+      res.send(result)
+    })
+    app.post('/places',async(req,res)=>{
+      const item=req.body
+      const result=await placesCollection.insertOne(item)
       res.send(result)
     })
       app.get('/guides',async(req,res)=>{
@@ -90,6 +96,28 @@ async function run() {
         const query={email:email}
         const result=await wishlistCollection.find(query).toArray()
         res.send(result)
+      })
+      app.delete('/wishList/:id',async(req,res)=>{
+        const id=req.params.id
+        const query={_id:new ObjectId(id)}
+        const result=await wishlistCollection.deleteOne(query)
+        res.send(result)
+      })
+
+      app.post('/user',async(req,res)=>{
+        const user=req.body
+        const email=user?.email
+        const query={email:email}
+        const findEmail=await userCollection.findOne(query)
+        if(findEmail){
+          return res.send('email already exist')
+        }
+        const result=await userCollection.insertOne(user)
+        res.send(result)
+      })
+      app.get('/user',async(req,res)=>{
+       const result=await userCollection.find().toArray()
+       res.send(result)
       })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
