@@ -21,7 +21,7 @@ const verifyToken=(req,res,next)=>{
       return res.status(403).send('forbidden access')
     }
     req.decoded=decoded
-    
+    next()
   })
 }
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -45,6 +45,17 @@ async function run() {
     const wishlistCollection=client.db('TourisGuide').collection("wishlist")
     const userCollection=client.db('TourisGuide').collection("users")
 
+    //--------------verify admin------------
+    const verifyAdmin=async(req,res,next)=>{
+      const email=req.decoded.email
+      const query={email:email}
+      const user=await userCollection.findOne(query)
+      const isAdmin=user?.role==="admin"
+      if(!isAdmin){
+        return res.status(403).send('access forbidden')
+      }
+      next()
+    }
     //---------------all restAPI for website------------
     app.get('/places',async(req,res)=>{
       const result=await placesCollection.find().toArray()
@@ -66,7 +77,11 @@ async function run() {
         const result=await placesCollection.findOne(query)
         res.send(result)
       })
-
+  app.post('/guide',async(req,res)=>{
+    const item=req.body
+    const result=await guideCollection.insertOne(item)
+    res.send(result)
+  })
       app.get('/guide/:id',async(req,res)=>{
         const id=req.params.id
         const query={_id:new ObjectId(id)}
@@ -156,6 +171,34 @@ async function run() {
         res.send(result)
       })
 
+      app.get('/place/:type',async(req,res)=>{
+        const type=req.params.type
+        const query={tour_type:type}
+        const result=await placesCollection.find(query).toArray()
+        res.send(result)
+      })
+      app.patch('/request/:email',async(req,res)=>{
+        const email=req.params.email
+        const query={email:email}
+        const updateDoc={
+          $set:{
+           status:'requested'
+          }
+        }
+        const result=await userCollection.updateOne(query,updateDoc)
+        res.send(result)
+      })
+      app.patch('/request/accept/:id',async(req,res)=>{
+        const id=req.params.id
+        const query={_id:new ObjectId(id)}
+        const updateDoc={
+          $set:{
+           status:'accepted'
+          }
+        }
+        const result=await userCollection.updateOne(query,updateDoc)
+        res.send(result)
+      })
       //------------check the admin---------
       app.get('/user/admin/:email',async(req,res)=>{
         const email=req.params.email
