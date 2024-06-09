@@ -1,7 +1,8 @@
+require('dotenv').config()
 const express = require('express');
 const app=express()
 const cors = require('cors');
-require('dotenv').config()
+var jwt = require('jsonwebtoken');
 const port=process.env.PORT||5000
 
 //-----------------set the middleware-----------
@@ -11,7 +12,18 @@ app.use(express.json())
 app.get('/',async(req,res)=>{
   res.send('tourist guide running')
 })
-
+const verifyToken=(req,res,next)=>{
+  if(!req.user.authorization){
+    return res.status(401).send('unAuthorized access')
+  }
+  jwt.verify(token,process.env.process.env.ACCESS_TOKEN,function(err,decoded){
+    if(err){
+      return res.status(403).send('forbidden access')
+    }
+    req.decoded=decoded
+    
+  })
+}
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.pnsxsk9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -145,7 +157,33 @@ async function run() {
       })
 
       //------------check the admin---------
-      
+      app.get('/user/admin/:email',async(req,res)=>{
+        const email=req.params.email
+        const query={email:email}
+        const user=await userCollection.findOne(query)
+        let admin=false
+        if(user){
+          admin=user?.role ==='admin'
+        }
+        res.send({admin})
+      })
+      app.get('/user/guide/:email',async(req,res)=>{
+        const email=req.params.email
+        const query={email:email}
+        const user=await userCollection.findOne(query)
+        let guide=false
+        if(user){
+          guide=user?.role ==='guide'
+        }
+        res.send({guide})
+      })
+
+      // -------------implement the jwt---------------
+      app.post('/jwt',async(req,res)=>{
+        const user=req.body
+        const token=jwt.sign(user,process.env.ACCESS_TOKEN,{expiresIn:"45day"})
+        res.send({token})
+      })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
