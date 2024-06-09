@@ -119,6 +119,33 @@ async function run() {
        const result=await userCollection.find().toArray()
        res.send(result)
       })
+      app.patch('/user/:id',async(req,res)=>{
+        const id=req.params.id
+        console.log(id);
+        const query={_id:new ObjectId(id)}
+        const updateDoc={
+            $set:{
+              role:'admin'
+            }
+        }
+        const result=await userCollection.updateOne(query,updateDoc)
+        res.send(result)
+      })
+      app.patch('/user/guide/:id',async(req,res)=>{
+        const id=req.params.id
+        console.log(id);
+        const query={_id:new ObjectId(id)}
+        const updateDoc={
+            $set:{
+              role:'guide'
+            }
+        }
+        const result=await userCollection.updateOne(query,updateDoc)
+        res.send(result)
+      })
+
+      //------------check the admin---------
+      
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
