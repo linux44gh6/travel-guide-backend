@@ -24,7 +24,7 @@ const verifyToken=(req,res,next)=>{
     next()
   })
 }
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId, CURSOR_FLAGS } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.pnsxsk9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -88,7 +88,7 @@ async function run() {
         const result=await guideCollection.findOne(query)
         res.send(result)
       })
-
+      
       app.post('/review',async(req,res)=>{
         const review=req.body
         const result=await reviewCollection.insertOne(review)
@@ -115,6 +115,41 @@ async function run() {
       app.get('/bookings/:email',async(req,res)=>{
         const email=req.params.email
         const query={email:email}
+        const result=await bookingsCollection.find(query).toArray()
+        res.send(result)
+      })
+     app.delete('/bookings/:id',async(req,res)=>{
+      const id=req.params.id
+      const query={_id:new ObjectId(id)}
+      const result=await bookingsCollection.deleteOne(query)
+      res.send(result)
+     })
+      app.patch('/guide/accept/:id',async(req,res)=>{
+        const id=req.params.id
+        const query={_id:new ObjectId(id)}
+        const updateDoc={
+          $set:{
+            status:'accept'
+          }
+        }
+        const result=await bookingsCollection.updateOne(query,updateDoc)
+        res.send(result)
+      })
+      app.patch('/guide/rejected/:id',async(req,res)=>{
+        const id=req.params.id
+        const query={_id:new ObjectId(id)}
+        const updateDoc={
+          $set:{
+            status:'rejected'
+          }
+        }
+        const result=await bookingsCollection.updateOne(query,updateDoc)
+        res.send(result)
+      })
+
+      app.get('/allBookings/:guide_email',async(req,res)=>{
+        const guide_email=req.params.guide_email
+        const query={guide_email:guide_email}
         const result=await bookingsCollection.find(query).toArray()
         res.send(result)
       })
@@ -193,7 +228,7 @@ async function run() {
         const query={_id:new ObjectId(id)}
         const updateDoc={
           $set:{
-           status:'accepted'
+           role:'guide'
           }
         }
         const result=await userCollection.updateOne(query,updateDoc)
