@@ -44,6 +44,7 @@ async function run() {
     const bookingsCollection=client.db('TourisGuide').collection("bookings")
     const wishlistCollection=client.db('TourisGuide').collection("wishlist")
     const userCollection=client.db('TourisGuide').collection("users")
+    const storyCollection=client.db('TourisGuide').collection("story")
 
     //--------------verify admin------------
     const verifyAdmin=async(req,res,next)=>{
@@ -232,6 +233,24 @@ async function run() {
           }
         }
         const result=await userCollection.updateOne(query,updateDoc)
+        res.send(result)
+      })
+
+      app.post('/story',async(req,res)=>{
+        const story=req.body
+        const result=await storyCollection.insertOne(story)
+        res.send(result)
+      })
+
+      app.get('/allStory',async(req,res)=>{
+        const result=await storyCollection.find().toArray()
+        res.send(result)
+      })
+
+      app.get('/storyDetails/:id',async(req,res)=>{
+        const id=req.params.id
+        const query={_id:new ObjectId(id)}
+        const result=await storyCollection.findOne(query)
         res.send(result)
       })
       //------------check the admin---------
